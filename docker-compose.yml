@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  telegraf:
+    image: telegraf:1.25-alpine
+    volumes:
+      - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - influxdb
+    ports:
+      - "8125/udp"
+
+  influxdb:
+    image: influxdb:1.8-alpine
+    env_file: .env
+    ports:
+      - "8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+
+  grafana:
+    image: grafana/grafana:9.3.0
+    depends_on:
+      - influxdb
+    env_file: .env
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+
+  app:
+    build:
+      context: app
+    restart: on-failure
+    depends_on:
+      - db
+      - telegraf
+    env_file: .env
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  db:
+    image: mariadb:latest
+    restart: on-failure
+    env_file: .env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./conf.d:/etc/mysql/conf.d
+      - ./initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "3306"
+
+volumes:
+  grafana_data: { }
+  influxdb_data: { }
+  mariadb_data: { }
