@@ -1,0 +1,6 @@
+BASE_URL=http://localhost:8080
+$(BASE_URL)/insert
+$(BASE_URL)/fetch_exact
+$(BASE_URL)/fetch_small_range
+$(BASE_URL)/fetch_big_range
+$(BASE_URL)/fetch_greater_than_or_less_than
