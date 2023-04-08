@@ -37,7 +37,7 @@ async def insert_handler():
 async def fetch_exact_handler():
     query = "SELECT * FROM users WHERE birth_date = :birth_date"
 
-    await db.fetch_all(query=query, values={"birth_date": fake_date()})
+    await db.execute(query=query, values={"birth_date": fake_date()})
 
     return STATUS_OK
 
@@ -48,7 +48,7 @@ async def fetch_small_range_handler():
     start_date = fake_date()
     end_date = start_date + datetime.timedelta(days=random.randint(1, 30))
 
-    await db.fetch_all(query=query, values={"start_date": start_date, "end_date": end_date})
+    await db.execute(query=query, values={"start_date": start_date, "end_date": end_date})
 
     return STATUS_OK
 
@@ -59,18 +59,19 @@ async def fetch_big_range_handler():
     start_date = fake_date(minimum_age=18)
     end_date = start_date + datetime.timedelta(days=random.randint(1_000, 10_000))
 
-    await db.fetch_all(query=query, values={"start_date": start_date, "end_date": end_date})
+    await db.execute(query=query, values={"start_date": start_date, "end_date": end_date})
 
     return STATUS_OK
 
 
 @app.get("/fetch_greater_than_or_less_than")
 async def fetch_greater_or_less_handler():
-    sign = ">" if random.random() > 0.5 else "<"
-    query = f"SELECT * FROM users WHERE birth_date {sign} :date"
-    date = fake_date()
+    if random.random() > 0.5:
+        query = "SELECT * FROM users WHERE birth_date > :date"
+    else:
+        query = "SELECT * FROM users WHERE birth_date < :date"
 
-    await db.fetch_all(query=query, values={"date": date})
+    await db.execute(query=query, values={"date": fake_date()})
 
     return STATUS_OK
 
@@ -79,7 +80,7 @@ async def fetch_greater_or_less_handler():
 async def fetch_all_handler():
     query = "SELECT * FROM users"
 
-    await db.fetch_all(query=query)
+    await db.execute(query=query)
 
     return STATUS_OK
 
